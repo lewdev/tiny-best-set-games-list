@@ -6,20 +6,20 @@
 
   <title>Tiny Best Set GO! List | Browse, search, tag, and discover the curated list of games</title>
   <meta name="author" content="Lewis Nakao">
-  <meta name="description" content="Browse, search, tag, and discover the massive list of games part of the Ukraine Bundle on itch.io">
-  <!-- <meta name="keywords" content="Code Generation, Vanilla JavaScript, Open Source"> -->
+  <meta name="description" content="Browse, search, tag, and discover the massive list of games in Tiny Best Set GO!">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕹️</text></svg>">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="🕹️ Tiny Best Set GO! List | Browse, search, tag, and discover the curated list of games">
-  <meta name="twitter:description" content="Browse, search, tag, and discover the massive list of games part of the Ukraine Bundle on itch.io">
+  <meta name="twitter:description" content="Browse, search, tag, and discover the massive list of games in Tiny Best Set GO!">
   <meta name="twitter:site" content="@lewdev">
   <meta name="twitter:creator" content="@lewdev">
   <!-- <meta name="twitter:image" content="https://lewdev.github.io/apps/tiny-best-set-games/img/banner-1200x630.png"> -->
 
   <!-- Open Graph general (Facebook, Pinterest)-->
   <meta property="og:title" content="🕹️ Tiny Best Set GO! List | Browse, search, tag, and discover the curated list of games">
-  <meta property="og:description" content="Browse, search, tag, and discover the massive list of games part of the Ukraine Bundle on itch.io">
+  <meta property="og:description" content="Browse, search, tag, and discover the massive list of games in Tiny Best Set GO!">
   <meta property="og:url" content="https://lewdev.github.io/apps/tiny-best-set-games/">
   <meta property="og:site_name" content="lewdev.github.io">
   <meta property="og:type" content="website">
@@ -30,21 +30,21 @@
 <body>
 <div class="container mt-3">
   <div class="justify-content-between d-flex">
-    <h1>🎮 <a href="https://archive.org/details/tiny-best-set-go">Tiny Best Set GO!</a> on archive.org</h1>
+    <h1>🕹️ <a href="https://archive.org/details/tiny-best-set-go">Tiny Best Set GO!</a> on archive.org</h1>
   </div>
+
+  <div class="mb-2 card card-body p-2">
+    <div id="filterPanel" class="justify-content-between d-flex"></div>
+    <div id="filterTagsElem"></div>
+  </div>
+
+
   <div class="justify-content-between d-flex mb-2">
     <input id="searchInput" type="text" onkeyup="render()" class="form-control" placeholder="Search...">
-    <div id="count" class="m-2 badge badge-secondary"></div>
+    <div id="count" class="m-2 badge bg-secondary"></div>
   </div>
-  <div class="justify-content-between d-flex mb-2">
-    <div id="platformFilter" class="btn-group mb-2" role="group" aria-label="filter by flatform">
-      
-      <button type="button" class="btn btn-primary">Middle</button>
-      <button type="button" class="btn btn-primary">Right</button>
-    </div>
-  </div>
-  <div id="filterTagsElem"></div>
-  <table class="table">
+
+  <table class="table table-striped table-hover table-bordered">
     <thead><tr id="header"></tr></thead>
     <tbody id=o></tbody>
   </table>
@@ -56,107 +56,7 @@
 </dialog>
 
 <script src="tiny-best-set-data.js"></script>
-<script>
-const APP_KEY = "tiny-best-set-games"
-let sortByField = "name";
-let filterTags = [];
-let filterPlatforms = [];
-let games = [];
-
-cap = s => s.charAt(0).toUpperCase() + s.substr(1);
-
-filterBtn = platform => `<button type="button" class="btn btn-primary" onclick="selectPlatform('${platform}')">
-  ${platform} <span class="badge badge-secondary">${data.platformMap[platform]}</span>
-</button>`;
-
-render = () => {
-  platformFilter.innerHTML = Object.keys(data.platformMap).map(key => filterBtn(key)).join``;
-  const search = searchInput.value;
-  const filtered = games.filter(g => (
-    (!search || g.name.toLowerCase().includes(search.toLowerCase()))
-    && (filterTags.length === 0 || (filterTags.length > 0 && g.parenthesis && filterTags.find(tag => g.parenthesis.includes(tag))))
-  ));
-  count.innerHTML = filtered.length;
-  header.innerHTML = Object.keys(games[0]).map(k => `<th>${cap(k)}</th>`).join``;
-  o.innerHTML = filtered.map(g => (
-    `<tr>
-      <td><a href="${g.url}" onclick="return openGame(${g.id})">${g.name}</a></td>
-      <td>${g.platform || '-'}</td>
-      <td>${g.set || '-'}GB</td>
-      <td>${showTags(g, true)}</td>
-    </tr>`
-  )).join``;
-  if (filterTags && filterTags.length > 0) filterTagsElem.innerHTML = "Filter Tags: "
-    + filterTags.map(t => `<button class="btn badge bg-info" onclick="removeTag('${t}')" title="Remove">${t}</button>`);
-};
-
-onload = () => {
-  // const str = localStorage.getItem(APP_KEY);
-  // games = str ? JSON.parse(str) : data.games;
-  games = data.games;
-  render();
-};
-
-const editTags = (id, tagsStr) => {
-  const g = games.find(a => a.id === id);
-  const tagsElem = document.getElementById("tagsElem");
-  if (tagsStr) {
-    //apply tags
-    g.parenthesis = tagsStr.split(",").map(s => s.trim());
-    localStorage.setItem(APP_KEY, JSON.stringify(games));
-    tagsElem.innerHTML = showTags(g);
-    render();
-  }
-  else {
-    //show edit form
-    tagsElem.innerHTML = `<input type="text" class="form-control" value="${g.parenthesis ? g.parenthesis.join(", ") : ""}" onkeypress="if (event.keyCode === 13) editTags(${g.id}, this.value);"/>`;
-    tagsElem.getElementsByTagName("input")[0].focus();
-  }
-  return false;
-};
-
-const filterByTag = tag => {
-  filterTags.push(tag);
-  filterTags = Array.from(new Set(filterTags));
-  render();
-};
-const removeTag = tag => {
-  filterTags = filterTags.filter(t => t !== tag);
-  render();
-}
-const showTags = (g, hideEditBtn) => ((!g.parenthesis || g.parenthesis.length === 0) ? "n/a" : (
-  g.parenthesis.map(s => `<button onclick="filterByTag('${s}')" class="btn badge bg-secondary mx-1">${s}</button>`).join``
-))
-+ (hideEditBtn ? "" : `<a href="#" onclick="return editTags(${g.id})">✏️</a>`);
-
-const viewBtn = (g, isPrev) => (
-  g ? `<button class="m-2 btn btn-primary" onclick="return openGame(${g.id})">${isPrev ? "⬅" : "➡"}</button>` : ""
-);
-
-const openGame = id => {
-  const g = games.find(a => a.id === id);
-  const index = games.findIndex(a => a.id === id);
-  const prev = index >= 0 ? games[index - 1] : null;
-  const next = index < games.length - 1 ? games[index + 1] : null;
-  c.innerHTML = `
-  <div class="justify-content-between d-flex">
-    <h3>${g.name}</h3>
-    <div><b>${g.platform}</b></div>
-    <div><b>${g.set}GB</b></div>
-  </div>
-  ${g.parenthesis?.map(p => `<span class="badge bg-info mr-1">${p}</span>`).join("") || ''}
-  <div class="my-2">
-    <b>Tags:</b> <span id="tagsElem">${showTags(g)}</span>
-  </div>
-  <div class="text-center">
-    ${viewBtn(prev, true)}
-    <a href="${g.url}" class="m-2 btn btn-primary">🔎 View Game</a>
-    ${viewBtn(next)}
-  </div>`;
-  d.showModal();
-  return false;
-};
-</script>
+<script src="script.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-GNP8ER8985"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-GNP8ER8985');</script>
 </body>
