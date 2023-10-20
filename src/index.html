@@ -25,10 +25,11 @@
   <meta property="og:type" content="website">
   <!-- <meta property="og:image" content="https://lewdev.github.io/apps/tiny-best-set-games/img/banner-1200x630.png"> -->
 
+  <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0-beta1/css/bootstrap.min.css" integrity="sha512-o/MhoRPVLExxZjCFVBsm17Pkztkzmh7Dp8k7/3JrtNCHh0AQ489kwpfA3dPSHzKDe8YCuEhxXq3Y71eb/o6amg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-<div class="container mt-3">
+< class="container mt-3 mb-5">
   <div class="justify-content-between d-flex">
     <h1>🕹️ <a href="https://archive.org/details/tiny-best-set-go">Tiny Best Set GO!</a> on archive.org</h1>
   </div>
@@ -38,16 +39,17 @@
     <div id="filterTagsElem"></div>
   </div>
 
-
   <div class="justify-content-between d-flex mb-2">
-    <input id="searchInput" type="text" onkeyup="render()" class="form-control" placeholder="Search...">
+    <input id="searchInput" type="text" onkeyup="thumbs = 20; render()" class="form-control" placeholder="Search...">
     <div id="count" class="m-2 badge bg-secondary"></div>
   </div>
 
-  <table class="table table-striped table-hover table-bordered">
+  <table id="tableView" class="table table-striped table-hover table-bordered">
     <thead><tr id="header"></tr></thead>
     <tbody id=o></tbody>
   </table>
+
+  <div id="thumbView" class="masonry mb-5"></div>
 </div>
 
 <dialog id=d>

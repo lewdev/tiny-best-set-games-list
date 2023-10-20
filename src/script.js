@@ -1,4 +1,5 @@
-const APP_KEY = "tiny-best-set-games"
+const APP_KEY = "tiny-best-set-games";
+const INCREMENT_THUMBS = 12;
 const filterValues = {};
 let sortByField = "name";
 let filters = {
@@ -10,7 +11,7 @@ let filters = {
       <strong>Platform:</strong>
       <select onchange="setFilter('platform', this.value)" value="${value || ""}">
         <option value="">- All -</option>
-        ${Object.keys(platformMap).sort().map(p => `<option value="${p}"${value === p ? " selected":""}>${p} (${platformMap[p]})</option>`).join``}
+        ${Object.keys(platformMap).sort().map(p => `<option value="${p}"${value === p ? " selected":""}>${p} (${platformMap[p].count})</option>`).join``}
       </select>
     </div>`;
   }},
@@ -25,12 +26,19 @@ let filters = {
       </select>
     </div>`;
   }},
+  viewToggle: {
+    render: _ => `<div>
+      <label><input type="checkbox" onchange="setIsThumbView(this.checked)"> Show Thumbnails</label>
+    </div>`
+  }
 };
 
 let filterTags = [];
 let filterPlatforms = [];
 let games = [];
 let filtered = [];
+let isThumbView = false;
+let thumbs = 20;
 
 const getPlatformColor = platform => {
   if (platform.startsWith("Nintendo -")) return "danger";
@@ -43,7 +51,9 @@ const getPlatformColor = platform => {
   return "secondary";
 };
 
-setFilter = (name, value) => (filters[name].value = isNaN(value) ? value : parseInt(value), render());
+setFilter = (name, value) => (thumbs = INCREMENT_THUMBS, filters[name].value = isNaN(value) ? value : parseInt(value), render());
+
+setIsThumbView = isThumb => (thumbs = INCREMENT_THUMBS, isThumbView = isThumb, render());
 
 cap = s => s.charAt(0).toUpperCase() + s.substr(1);
 
@@ -59,22 +69,52 @@ render = () => {
     && (filterTags.length === 0 || (filterTags.length > 0 && g.tags && filterTags.find(tag => g.tags.includes(tag))))
   ));
   count.innerHTML = filtered.length;
-  header.innerHTML = Object.keys(games[0]).map(k => `<th>${cap(k)}</th>`).join``;
-  o.innerHTML = filtered.map(g => (
-    `<tr>
-      <td><a href="#" onclick="return openGame('${g.name}')">${g.name}</a></td>
-      <td><span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span></td>
-      <td>${g.set || '-'}GB</td>
-      <td>${showTags(g, true)}</td>
-    </tr>`
-  )).join``;
-  if (filterTags && filterTags.length > 0) filterTagsElem.innerHTML = "Filter Tags: "
-    + filterTags.map(t => `<button class="btn badge bg-info" onclick="removeTag('${t}')" title="Remove">${t}</button>`);
+  tableView.style.display = isThumbView ? "none" : "";
+  thumbView.style.display = !isThumbView ? "none" : "";
+  if (isThumbView) {
+    thumbView.innerHTML = filtered.map((g, i) => i >= thumbs ? "" : (
+      `<div class="masonry-item">
+        <div class="card card-body">
+          <div>${getGameImg(g, 175)}</div>
+          <div><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a></div>
+          <div><span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span></div>
+          <div>${g.set || '-'}GB</div>
+          <div>${showTags(g, true)}</div>
+        </div>
+      </div>`
+    )).join``;
+  }
+  else {
+    header.innerHTML = Object.keys(games[0]).map(k => `<th>${cap(k)}</th>`).join``;
+    o.innerHTML = filtered.map(g => (
+      `<tr>
+        <td><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a></td>
+        <td><span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span></td>
+        <td>${g.set || '-'}GB</td>
+        <td>${showTags(g, true)}</td>
+      </tr>`
+    )).join``;
+  }
+  filterTagsElem.innerHTML = !filterTags.length ? "" : "Filter Tags: "
+    + filterTags.map(t => `<button class="btn badge bg-info mr-1" onclick="removeTag('${t}')" title="Remove">${t}</button>`).join``;
 };
 
 onload = () => {
   // const str = localStorage.getItem(APP_KEY);
   // games = str ? JSON.parse(str) : data.games;
+  window.addEventListener("scroll", () => {
+    if (!isThumbView) return;
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight;
+    // Calculates the height of the client viewport, adjusted for the device's pixel ratio
+    const clientHeight = document.documentElement.clientHeight * window.devicePixelRatio;
+    if (scrollTop + clientHeight >= scrollHeight) {
+      if (thumbs < filtered.length) {
+        thumbs = Math.min(thumbs + INCREMENT_THUMBS, filtered.length);
+        render();
+      }
+    }
+  });
   games = data.games;
   renderFilters(games);
   render();
@@ -115,31 +155,14 @@ const viewBtn = (g, isPrev) => (
   g ? `<button class="m-2 btn btn-primary" onclick="return openGame('${g.name}')">${isPrev ? "⬅" : "➡"}</button>` : ""
 );
 
-const nameToMoby = {
-  "Arcade (Mame 2003+)": "arcade",
-  "SNK - Neo Geo": "arcade",
-  "Atari - 2600": "atari-st",
-  "Nintendo - NES": "nes",
-  "Nintendo - SNES": "snes",
-  "Nintendo - Game Boy": "gameboy",
-  "Nintendo - Game Boy Color": "gameboy",
-  "Nintendo - Game Boy Advance": "gameboy-advance",
-  "Sega - Master System": "sega-master-system",
-  "Sega - Genesis": "genesis",
-  "Sega - Game Gear": "game-gear",
-  "NEC - TurboGrafx-16": "turbo-grafx",
-  "Sega - Sega CD": "sega-cd",
-  "NEC - TurboGrafx-CD": "turbografx-cd",
-  "Sony - PlayStation": "playstation",
-}
-
-const getPlatform = platform => nameToMoby[platform] || "";
+const getPlatform = platform => data.platformMap[platform] || null;
 
 const openGame = name => {
   const index = filtered.findIndex(a => a.name === name);
   const g = filtered[index];
   const prev = index >= 0 ? filtered[index - 1] : null;
   const next = index < filtered.length - 1 ? filtered[index + 1] : null;
+  const { dir, mobyName } = getPlatform(g.platform);
   c.innerHTML = `
   <div class="justify-content-between d-flex">
     <h3>${g.name}</h3>
@@ -150,12 +173,33 @@ const openGame = name => {
     <div><b>Set:</b> ${g.set}GB</div>
     <b>Tags:</b> <span id="tagsElem">${showTags(g)}</span>
   </div>
+
+  <div class="mt-2 mx-auto">
+    ${getGameImg(g, 300)}
+  </div>
+
   <div class="text-center">
     ${viewBtn(prev, true)}
-    <a href="https://www.mobygames.com/game/platform:${getPlatform(g.platform)}/title:${g.name.replace(/ \([\s\S]*?\)/g, '')}/sort:moby_score/"
+    <a href="https://www.mobygames.com/game/platform:${mobyName}/title:${g.name.replace(/ \([\s\S]*?\)/g, '')}/sort:moby_score/"
       target="_blank" class="m-2 btn btn-primary" title="Find on Moby Games">🔎 Find Game</a>
     ${viewBtn(next)}
   </div>`;
   d.showModal();
   return false;
 };
+
+const BASE_URL = "http://lewdev.brinkster.net/apps/tiny-best-set/Roms";
+const getGameImg = (g, width) => {
+  const { gameToRomName } = data;
+  const { dir } = getPlatform(g.platform);
+  const friendlyName = fileFriendly(g.name);
+  const nameNoParen = removeParenthesisAndContents(g.name);
+  const filename = (dir === "ARCADE" && (gameToRomName[nameNoParen] || gameToRomName[friendlyName])) || friendlyName;
+  const src = ` src="${BASE_URL}/${dir}/Imgs/${filename}.png"`;
+  const displayWidth = width ? ` width="${width}"` : "";
+  const title = ` title="${dir} / ${filename}"`;
+  return `<img class="d-block mx-auto"${src + displayWidth + title} onerror="this.src='${BASE_URL}/image-not-found.png'">`
+};
+
+const fileFriendly = s => s.replace(/\s*:/g, " -").replace(/[\?°]/g, "");
+const removeParenthesisAndContents = s => fileFriendly(s).replace(/\s*\([\w\-,\.\d\s/\[\]]+\)/g, "");

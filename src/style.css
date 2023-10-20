@@ -1,0 +1,30 @@
+/* Source: https://www.smashingmagazine.com/native-css-masonry-layout-css-grid/ */
+.masonry {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-rows: masonry;
+  height: 200vh;
+  align-tracks: stretch ;
+}
+.masonry-item { /* Masonry bricks or child elements */
+  margin: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  background-color: white;
+}
+@media screen and (min-width: 400px) {
+  .masonry {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media screen and (min-width: 600px) {
+  .masonry {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media screen and (min-width: 800px) {
+  .masonry {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
