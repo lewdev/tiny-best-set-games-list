@@ -1,17 +1,23 @@
-/* Source: https://www.smashingmagazine.com/native-css-masonry-layout-css-grid/ */
+/* Source: https://www.smashingmagazine.com/native-css-masonry-layout-css-grid/
 .masonry {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(1, 1fr);
   grid-template-rows: masonry;
-  height: 200vh;
   align-tracks: stretch ;
 }
-.masonry-item { /* Masonry bricks or child elements */
+.masonry-item { /* Masonry bricks or child elements 
   margin: 0;
   display: grid;
   grid-template-rows: 1fr auto;
   background-color: white;
+}
+.masonry-item, .masonry-item > .card {
+  min-height: 100px;
+}
+.masonry-item > .card > div > img {
+  
+  max-width: 100%;
 }
 @media screen and (min-width: 400px) {
   .masonry {
@@ -28,3 +34,39 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+@media screen and (min-width: 1000px) {
+  .masonry {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media screen and (min-width: 1200px) {
+  .masonry {
+    grid-template-columns: repeat(6, 1fr);
+  }
+} */
+
+
+.masonry-item {
+  margin: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  margin-bottom: 10px;
+  break-inside: avoid;
+}
+.masonry-item > div > div > img {
+  width: 100%;
+  /* grid-row: 1 / -1;
+  grid-column: 1; */
+}
+.masonry {
+  column-count: 4;
+  column-gap: .5rem;
+}
+@media screen and (min-width: 300px) { .masonry { column-count: 1; } }
+@media screen and (min-width: 600px) { .masonry { column-count: 2; } }
+@media screen and (min-width: 900px) { .masonry { column-count: 3; } }
+@media screen and (min-width: 1200px) { .masonry { column-count: 4; } }
+@media screen and (min-width: 1500px) { .masonry { column-count: 5; } }
+@media screen and (min-width: 1800px) { .masonry { column-count: 6; } }
+@media screen and (min-width: 2100px) { .masonry { column-count: 7; } }
+@media screen and (min-width: 2400px) { .masonry { column-count: 8; } }

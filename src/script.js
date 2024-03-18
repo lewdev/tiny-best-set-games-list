@@ -7,7 +7,7 @@ let filters = {
     //const platformMap = games.reduce((prev, curr) => (prev[curr.platform] = (prev[curr.platform] || 0) + 1, prev), {});
     const { platformMap } = data;
     const value = filters.platform.value || "";
-    return `<div>
+    return `<div class="col-md-6">
       <strong>Platform:</strong>
       <select onchange="setFilter('platform', this.value)" value="${value || ""}">
         <option value="">- All -</option>
@@ -18,7 +18,7 @@ let filters = {
   set: { render: _ => {
     const setMap = games.reduce((prev, curr) => (prev[curr.set] = (prev[curr.set] || 0) + 1, prev), {});
     const value = filters.set.value || "";
-    return `<div>
+    return `<div class="col-md-3">
       <strong>Set:</strong>
       <select onchange="setFilter('set', this.value)" value="${value}">
         <option value="">- All -</option>
@@ -27,7 +27,7 @@ let filters = {
     </div>`;
   }},
   viewToggle: {
-    render: _ => `<div>
+    render: _ => `<div class="col-md-3">
       <label><input type="checkbox" onchange="setIsThumbView(this.checked)"> Show Thumbnails</label>
     </div>`
   }
@@ -74,8 +74,8 @@ render = () => {
   if (isThumbView) {
     thumbView.innerHTML = filtered.map((g, i) => i >= thumbs ? "" : (
       `<div class="masonry-item">
-        <div class="card card-body">
-          <div>${getGameImg(g, 175)}</div>
+        <div class="mr-2 mb-2">
+          <div>${getGameImg(g)}</div>
           <div><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a></div>
           <div><span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span></div>
           <div>${g.set || '-'}GB</div>
