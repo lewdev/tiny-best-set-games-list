@@ -21,12 +21,13 @@
       </div>
     </div>
   </div>
-  <div class="card card-body">
-    <table id="tableView" class="table table-striped table-hover table-bordered">
-      <thead><tr id="header"></tr></thead>
-      <tbody id=o><tr><td>Select a Platform</td></tr></tbody>
-    </table>
-  </div>
+
+  <div class="card card-body mb-2" style="display: none" id="thumbsLeft"></div>
+
+  <table id="tableView" class="table table-striped table-hover table-bordered">
+    <thead><tr id="header"></tr></thead>
+    <tbody id=o><tr><td>Select a Platform</td></tr></tbody>
+  </table>
 </div>
 
 <dialog id=d>
@@ -39,17 +40,31 @@
 let selectedPlatform = "";
 let thumbMap = {}; // DIR to list of thumbs
 
+const pathToLabel = path => {
+  let label = path.split(".").pop();
+  return label ? (
+    label.split(/(?=[A-Z0-9][a-z])/)
+      .map(a => a.split(/([A-Z][a-z]+|[a-z][A-Z])/).filter(b => b).join`-`)
+      .join`-`.trim()
+  ) : "";
+};
 const fileFriendly = s => s.replace(/\s*:/g, " -").replace(/[\?°]/g, "");
-const removeParenthesisAndContents = s => fileFriendly(s).replace(/\s*\([\w\-,\.\d\s/\[\]]+\)/g, "");
-const imgbbFileName = s => s.replace(/[^\d\w\ ]+/gi, "").trim().split` `.join`-`.replace(/[-]+/g, "-");
+const removeParenthesisAndContents = s => (s).replace(/\s*\([\w\-,\.\d\s/\[\]]+\)/g, "");
+const imgbbFileName = s => s
+  .replace(/[^0-9A-Za-z\ \-\.',]+/gi, "")
+  .replace(/[\.',]/g, "-")
+  .trim().split` `
+  .map(pathToLabel).join`-`.replace(/[-]+/g, "-")
+;
 
 setSelectedPlatform = platformName => {
   platformSelect.value = platformName;
   selectedPlatform = platformName;
+  if (!platformName) return;
   const platform = data.platformMap[platformName];
   if (!platform) { alert(`Platform "${platformName}" not found.`); return; }
   fetch(`./thumbs/${platform.dir}.txt`).then(r => r.text()).then(r => {
-    thumbMap[platform.dir] = r.split`\n`;
+    thumbMap[platform.dir] = r.split`\n`.map(s => s.trim());
   }).then(() => render());
 };
 
@@ -58,7 +73,7 @@ seeThumbs = () => {
   c.innerHTML = platform ? `<pre>${thumbMap[platform.dir].join`\n`}</pre>` : "Platform data not found.";
   d.style.width = 500;
   d.showModal();
-}
+};
 
 render = () => {
   const { platformMap } = data;
@@ -67,25 +82,32 @@ render = () => {
 
   if (selectedPlatform) {
     const platform = data.platformMap[selectedPlatform];
-    console.log(platform, thumbMap[platform.dir]);
-    const games = data.games.filter(g => g.platform === selectedPlatform);
-    o.innerHTML = games.map(g => {
-      const romName = data.gameToRomName[removeParenthesisAndContents(g.name)] || imgbbFileName(g.name);
-      const imgbbName = imgbbFileName(g.name);
+    const thumbPaths = [...thumbMap[platform.dir]];
+    const games = data.games.filter(g => g.platform === selectedPlatform).map(g => {
+      const nameNoParen = removeParenthesisAndContents(g.name);
+      const romName = data.gameToRomName[nameNoParen];
+      console.log({nameNoParen, romName})
+      const imgbbException = data.gameToImgbb[nameNoParen];
+      const imgbbName = imgbbException || imgbbFileName(g.name);
       const thumbPath = (thumbMap[platform.dir] || []).find(t => {
         const thumbName = t.split`/`.pop().trim();
         return [romName, imgbbName].includes(thumbName);
       });
-      if (thumbPath) g.thumb = thumbPath;
-      return (
-        `<tr>
-          <td>${g.name}</td>
-          <td>${romName}</td>
-          <td>${imgbbName}</td>
-          <td>${thumbPath || "N/A"}</td>
-        </tr>`
-      );
-    }).join``;
+      if (thumbPath) {
+        const index = thumbPaths.indexOf(thumbPath);
+        if (index >= 0) thumbPaths.splice(index, 1);
+        g.thumb = thumbPath;
+      }
+      return {...g, romName, imgbbName};
+    });
+    const total = thumbMap[platform.dir].length;
+    const notFound = thumbPaths.length;
+    thumbsLeft.style.display = "";
+    thumbsLeft.innerHTML = `${total - notFound} of ${thumbMap[platform.dir].length} found<br>
+      <div class="row">${thumbPaths.map(a => `<div class="col-3">${a}</div>`).join``}</div>`;
+    o.innerHTML = games.sort((a, b) => (a.thumb || "").localeCompare(b.thumb || "")).map(g => (
+      `<tr>${["name", "romName", "imgbbName", "thumb"].map(n => `<td>${g[n] || "N/A"}</td>`).join``}</tr>`
+    )).join``;
   }
 };
 onload = () => render();
