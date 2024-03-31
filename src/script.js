@@ -51,15 +51,15 @@ const getPlatformColor = platform => {
   return "secondary";
 };
 
-setFilter = (name, value) => (thumbs = INCREMENT_THUMBS, filters[name].value = isNaN(value) ? value : parseInt(value), render());
+const setFilter = (name, value) => (thumbs = INCREMENT_THUMBS, filters[name].value = isNaN(value) ? value : parseInt(value), render());
 
-setIsThumbView = isThumb => (thumbs = INCREMENT_THUMBS, isThumbView = isThumb, render());
+const setIsThumbView = isThumb => (thumbs = INCREMENT_THUMBS, isThumbView = isThumb, render());
 
-cap = s => s.charAt(0).toUpperCase() + s.substr(1);
+const cap = s => s.charAt(0).toUpperCase() + s.substr(1);
 
-renderFilters = _ => filterPanel.innerHTML = Object.keys(filters).map(name => filters[name].render()).join`` + "<div></div>";
+const renderFilters = _ => filterPanel.innerHTML = Object.keys(filters).map(name => filters[name].render()).join`` + "<div></div>";
 
-render = () => {
+const render = () => {
   const search = searchInput.value;
   const filterKeys = Object.keys(filters);
   const filtersSet = filterKeys.filter(f => filters[f].value).length;
@@ -72,20 +72,22 @@ render = () => {
   tableView.style.display = isThumbView ? "none" : "";
   thumbView.style.display = !isThumbView ? "none" : "";
   if (isThumbView) {
-    thumbView.innerHTML = filtered.map((g, i) => i >= thumbs ? "" : (
-      `<div class="masonry-item">
-        <div class="mr-2 mb-2">
+    thumbView.innerHTML = `<div class="">
+      ${filtered.map((g, i) => i >= thumbs ? "" : (
+      `<div class="masonry-item d-inline-block">
+        <div class="m-1">
           <div>${getGameImg(g)}</div>
-          <div><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a></div>
-          <div><span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span></div>
-          <div>${g.set || '-'}GB</div>
-          <div>${showTags(g, true)}</div>
+          <div><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a> ${g.set || '-'}GB</div>
+          <div>
+            <span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span>
+            ${showTags(g, true)}
+          </div>
         </div>
       </div>`
-    )).join``;
+    )).join``}</div>`;
   }
   else {
-    header.innerHTML = Object.keys(games[0]).map(k => `<th>${cap(k)}</th>`).join``;
+    header.innerHTML = "name,platform,set,tags".split`,`.map(k => `<th>${cap(k)}</th>`).join``;
     o.innerHTML = filtered.map(g => (
       `<tr>
         <td><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a></td>
@@ -190,14 +192,10 @@ const openGame = name => {
 
 const BASE_URL = "http://lewdev.brinkster.net/apps/tiny-best-set/Roms";
 const getGameImg = (g, width) => {
-  const { gameToRomName } = data;
   const { dir } = getPlatform(g.platform);
-  const friendlyName = fileFriendly(g.name);
-  const nameNoParen = removeParenthesisAndContents(g.name);
-  const filename = (dir === "ARCADE" && (gameToRomName[nameNoParen] || gameToRomName[friendlyName])) || friendlyName;
-  const src = ` src="${BASE_URL}/${dir}/Imgs/${filename}.png"`;
+  const src = ` src="https://i.ibb.co/${g.thumb}.png"`;
   const displayWidth = width ? ` width="${width}"` : "";
-  const title = ` title="${dir} / ${filename}"`;
+  const title = ` title="${dir} / ${g.name}"`;
   return `<img class="d-block mx-auto"${src + displayWidth + title} onerror="this.src='${BASE_URL}/image-not-found.png'">`
 };
 

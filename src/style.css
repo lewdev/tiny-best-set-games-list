@@ -45,28 +45,16 @@
   }
 } */
 
-
-.masonry-item {
-  margin: 0;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  margin-bottom: 10px;
-  break-inside: avoid;
-}
 .masonry-item > div > div > img {
   width: 100%;
-  /* grid-row: 1 / -1;
-  grid-column: 1; */
 }
-.masonry {
-  column-count: 4;
-  column-gap: .5rem;
-}
-@media screen and (min-width: 300px) { .masonry { column-count: 1; } }
-@media screen and (min-width: 600px) { .masonry { column-count: 2; } }
-@media screen and (min-width: 900px) { .masonry { column-count: 3; } }
-@media screen and (min-width: 1200px) { .masonry { column-count: 4; } }
-@media screen and (min-width: 1500px) { .masonry { column-count: 5; } }
-@media screen and (min-width: 1800px) { .masonry { column-count: 6; } }
-@media screen and (min-width: 2100px) { .masonry { column-count: 7; } }
-@media screen and (min-width: 2400px) { .masonry { column-count: 8; } }
+@media screen and (min-width: 200px)  { .masonry-item { width: 100%; } }
+@media screen and (min-width: 400px)  { .masonry-item { width: 50%; } }
+@media screen and (min-width: 600px)  { .masonry-item { width: 33.333%; } }
+@media screen and (min-width: 800px) { .masonry-item { width: 25%; } }
+@media screen and (min-width: 1000px) { .masonry-item { width: 20%; } }
+@media screen and (min-width: 1200px) { .masonry-item { width: 16.667%; } }
+@media screen and (min-width: 1400px) { .masonry-item { width: 14.285%; } }
+@media screen and (min-width: 1600px) { .masonry-item { width: 12.5%; } }
+@media screen and (min-width: 1800px) { .masonry-item { width: 11.111%; } }
+@media screen and (min-width: 2000px) { .masonry-item { width: 10%; } }
