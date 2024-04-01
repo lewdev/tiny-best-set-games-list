@@ -30,7 +30,7 @@ let filters = {
     render: _ => `<div class="col-md-3">
       <label><input type="checkbox" onchange="setIsThumbView(this.checked)"> Show Thumbnails</label>
     </div>`
-  }
+  },
 };
 
 let filterTags = [];
@@ -53,7 +53,7 @@ const getPlatformColor = platform => {
 
 const setFilter = (name, value) => (thumbs = INCREMENT_THUMBS, filters[name].value = isNaN(value) ? value : parseInt(value), render());
 
-const setIsThumbView = isThumb => (thumbs = INCREMENT_THUMBS, isThumbView = isThumb, render());
+const setIsThumbView = isThumb => (thumbs = INCREMENT_THUMBS, isThumbView = isThumb, thumbs = 20, render());
 
 const cap = s => s.charAt(0).toUpperCase() + s.substr(1);
 
@@ -72,19 +72,23 @@ const render = () => {
   tableView.style.display = isThumbView ? "none" : "";
   thumbView.style.display = !isThumbView ? "none" : "";
   if (isThumbView) {
-    thumbView.innerHTML = `<div class="">
+    thumbView.innerHTML = `<div>
       ${filtered.map((g, i) => i >= thumbs ? "" : (
-      `<div class="masonry-item d-inline-block">
-        <div class="m-1">
-          <div>${getGameImg(g)}</div>
-          <div><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a> ${g.set || '-'}GB</div>
-          <div>
-            <span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span>
-            ${showTags(g, true)}
+        `<div class="masonry-item d-inline-block mb-auto align-top">
+          <div class="m-1">
+            <div>${getGameImg(g)}</div>
+            <div><a href="#" onclick="return openGame('${g.name.replace(/'/g, "\\'")}')">${g.name}</a> ${g.set || '-'}GB</div>
+            <div>
+              <span class="badge bg-${getPlatformColor(g.platform)}">${g.platform || '-'}</span>
+              ${showTags(g, true)}
+            </div>
           </div>
-        </div>
-      </div>`
-    )).join``}</div>`;
+        </div>`
+      )).join``}
+    </div>
+    ${filtered.length < thumbs ? (
+      `<button class="btn btn-lg btn-primary my-3 w-100" onclick="seeMoreThumbs()">▼ See More ▼</button>`
+    ) : ""}`;
   }
   else {
     header.innerHTML = "name,platform,set,tags".split`,`.map(k => `<th>${cap(k)}</th>`).join``;
@@ -99,6 +103,11 @@ const render = () => {
   }
   filterTagsElem.innerHTML = !filterTags.length ? "" : "Filter Tags: "
     + filterTags.map(t => `<button class="btn badge bg-info mr-1" onclick="removeTag('${t}')" title="Remove">${t}</button>`).join``;
+};
+
+const seeMoreThumbs = () => {
+  thumbs = Math.min(thumbs + INCREMENT_THUMBS, filtered.length);
+  render();
 };
 
 onload = () => {
